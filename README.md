@@ -32,7 +32,7 @@ __Lock button__ locks current status and automatically applies it on the other p
 ></br>
 >You will also be notified on status locking
  
-### Contact me
+## Contact me
 __on discord__: `@ee3k`
 
 
