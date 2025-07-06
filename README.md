@@ -1,7 +1,7 @@
 # Backpack-tf-crosslist-remover
 This script allows you to hide marketplace listings on classifieds page
 
-## Instalation 
+## Installation 
 >You need tampermonkey/greasemonkey to use the script
 
 To install the script, press [here](https://github.com/yaboieeek/backpack-tf-crosslist-remover/raw/refs/heads/main/backpack-tf-crosslist-remover.user.js)
