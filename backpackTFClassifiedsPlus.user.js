@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.1.2
+// @version      1.1.3
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -207,24 +207,32 @@
 
     class ListingsFiltersControl {
         // blockedUsers = GM_getValue('blockedUsers') || []
+        firstHeaderIndex = 0;
+        secondHeaderIndex = 1;
 
         constructor(listings = [], scroll) {
             this.listings = listings;
             this.hidingCfg = {
-                'strange_unusuals': GM_getValue('strange_unusuals')|| false,
-                spells            : GM_getValue('spells')          || false,
-                'mp_listings'     : GM_getValue('mp_listings')     || false,
+                strange_unusuals : GM_getValue('strange_unusuals')|| false,
+                spells           : GM_getValue('spells')          || false,
+                mp_listings      : GM_getValue('mp_listings')     || false,
                 // 'blocked_listings': GM_getValue('blocked_listings')|| false,
-                truncating       : GM_getValue('truncating')       || false,
-                autoscroll       : GM_getValue('autoscroll')       || false,
+                truncating       : GM_getValue('truncating')      || false,
+                autoscroll       : GM_getValue('autoscroll')      || false,
         }
+
+
+            this.firstHeaderIndex = document.querySelectorAll('.panel-extras')[0].parentElement.innerText === 'Advertisement' ? 1 : 0;
+
+            this.secondHeaderIndex = this.firstHeaderIndex + 1;
             this.createList();
             this.initDefaults(scroll); /// cus scroll is something from another class
             this.addRevealButtons();
         }
 
         createList() {
-            const targetElement = document.querySelectorAll('.panel-extras')[2];
+            const targetElement = document.querySelectorAll('.panel-extras')[this.secondHeaderIndex];
+
             const [toggleSelectButton, blockedUsersButton, filtersContainer] = [document.createElement('button'),document.createElement('button'), document.createElement('div')];
 
             toggleSelectButton.innerText = 'View settings';
@@ -295,9 +303,9 @@
         }
         initDefaults(scroll) {
             for (const listing of this.listings) {
-                this.hidingCfg['mp_listings'] && listing.isMarketplace && listing.toggleVisibility();
+                this.hidingCfg.mp_listings && listing.isMarketplace && listing.toggleVisibility();
                 this.hidingCfg.spells && listing.isSpelled && listing.toggleVisibility();
-                this.hidingCfg['strange_unusuals'] && listing.isStrange && listing.toggleVisibility();
+                this.hidingCfg.strange_unusuals && listing.isStrange && listing.toggleVisibility();
                 this.hidingCfg.truncating && listing.truncateTheListing();
             }
             this.hidingCfg.autoscroll && scroll.scrollToListings();
@@ -313,8 +321,8 @@
 
         ////we need to place mp button on the left cus mp orders cant be buy orders
         const [sellOrderHeader, buyOrderHeader] = [
-        document.querySelectorAll('.panel-heading')[1].querySelector('.panel-extras'),
-        document.querySelectorAll('.panel-heading')[2].querySelector('.panel-extras'),
+        document.querySelectorAll('.panel-heading')[this.firstHeaderIndex].querySelector('.panel-extras'),
+        document.querySelectorAll('.panel-heading')[this.secondHeaderIndex].querySelector('.panel-extras'),
         ];
 
         const createButtons = (category, categoryName) => {
