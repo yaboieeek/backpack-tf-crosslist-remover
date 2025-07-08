@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.1.1
+// @version      1.1.2
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
