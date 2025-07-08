@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.0.0
+// @version      1.1.0
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=backpack.tf
 // @source       https://github.com/yaboieeek/backpackTFClassifiedsPlus/
-// @updateURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/backpackTFClassifiedsPlus.user.js
-// @downloadURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/backpackTFClassifiedsPlus.user.js
+// @updateURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/ScrapAuctionsPlus.user.js
+// @downloadURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/ScrapAuctionsPlus.user.js
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
@@ -117,7 +117,7 @@
         } else if (listingData.spell_1 && (listingData.listing_intent === 'buy')){
             return new SpellListing(listingElement, listingData);
 
-        } else if (listingData.quality_elevated && (listingData.listing_intent === 'buy')) {
+        } else if ((listingData.listing_intent === 'buy') && ((listingData.quality_elevated) || (listingData.effect_id && listingData.quality === '11'))) {
             return new StrangeListing(listingElement, listingData);
         }
 
@@ -181,7 +181,7 @@
         scrollToListings () {
             const listingsContainer = document.querySelectorAll('.row')[1];
             //////get the position of listings on the page and scroll the window to them
-            const listingsContainerOffset = listingsContainer.getBoundingClientRect().top + window.pageYOffset ; // 38 is header height in px but i might be wrong and i am in fact just lazy to get a proper height
+            const listingsContainerOffset = listingsContainer.getBoundingClientRect().top + window.pageYOffset - 40; // 38 is header height in px but i might be wrong and i am in fact just lazy to get a proper height
             window.scrollTo({top: listingsContainerOffset});
         }
 
@@ -225,7 +225,6 @@
 
         createList() {
             const targetElement = document.querySelectorAll('.panel-extras')[2];
-            targetElement.style = 'color: black';
             const [toggleSelectButton, blockedUsersButton, filtersContainer] = [document.createElement('button'),document.createElement('button'), document.createElement('div')];
 
             toggleSelectButton.innerText = 'View settings';
@@ -315,7 +314,7 @@
         ////we need to place mp button on the left cus mp orders cant be buy orders
         const [sellOrderHeader, buyOrderHeader] = [
         document.querySelectorAll('.panel-heading')[1],
-        document.querySelectorAll('.panel-heading')[2],
+        document.querySelectorAll('.panel-heading')[2].querySelector('.panel-extras'),
         ];
 
         const createButtons = (category, categoryName) => {
@@ -323,7 +322,7 @@
             button.style = 'color: black; line-height: 1';
 
             button.innerHTML = `Toggle <b>${category.length} ${categoryName}</b> listing${category.length > 1 ? 's' : ''}`;
-
+            button.className = 'toggle-button';
 
             button.addEventListener('click', () => {for (const listing of category) {listing.toggleVisibility()}});
 
@@ -333,7 +332,7 @@
                 return;
             }
             // append other buttons on the right
-            buyOrderHeader.querySelector('span').after(button);
+            buyOrderHeader.append(button);
         }
         if (mp.length >= 1)       createButtons(mp, 'mp');
         if (spell.length >= 1 )   createButtons(spell, 'spell');
@@ -398,12 +397,21 @@
     color: white;
     background-color: rgba(255,255,255, .3)
 }
-
+.toggle-button {
+    width: max-content;
+}
 footer {
     position: relative;
     z-index: 1
 }
-
+.panel-heading {
+    flex-direction: column !important
+}
+.panel-extras {
+    flex-flow: end;
+    font-size: 13px !important;
+    color: black;display: flex; flex-flow: row-reverse
+}
 </style>`
 
 const importantStuff = 'https://youtu.be/YWyHZNBz6FE?si=nPqzkUKc3kCtJQ2Z';
