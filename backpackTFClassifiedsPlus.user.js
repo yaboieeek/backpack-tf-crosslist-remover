@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.1.0
+// @version      1.1.1
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -313,7 +313,7 @@
 
         ////we need to place mp button on the left cus mp orders cant be buy orders
         const [sellOrderHeader, buyOrderHeader] = [
-        document.querySelectorAll('.panel-heading')[1],
+        document.querySelectorAll('.panel-heading')[1].querySelector('.panel-extras'),
         document.querySelectorAll('.panel-heading')[2].querySelector('.panel-extras'),
         ];
 
