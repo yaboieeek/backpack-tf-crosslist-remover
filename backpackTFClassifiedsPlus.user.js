@@ -7,8 +7,8 @@
 // @match        https://backpack.tf/classifieds?*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=backpack.tf
 // @source       https://github.com/yaboieeek/backpackTFClassifiedsPlus/
-// @updateURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/ScrapAuctionsPlus.user.js
-// @downloadURL https://github.com/yaboieeek/BPTF-button-on-different-sites/raw/refs/heads/main/ScrapAuctionsPlus.user.js
+// @updateURL https://github.com/yaboieeek/backpackTFClassifiedsPlus/raw/refs/heads/main/backpackTFClassifiedsPlus.user.js
+// @downloadURL https://github.com/yaboieeek/backpackTFClassifiedsPlus/raw/refs/heads/main/backpackTFClassifiedsPlus.user.js
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
