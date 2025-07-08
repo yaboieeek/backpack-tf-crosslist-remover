@@ -213,7 +213,7 @@
             this.hidingCfg = {
                 'strange_unusuals': GM_getValue('strange_unusuals')|| false,
                 spells            : GM_getValue('spells')          || false,
-                'mp_listings'     : GM_getValue('mp listings')     || false,
+                'mp_listings'     : GM_getValue('mp_listings')     || false,
                 // 'blocked_listings': GM_getValue('blocked_listings')|| false,
                 truncating       : GM_getValue('truncating')       || false,
                 autoscroll       : GM_getValue('autoscroll')       || false,
@@ -354,7 +354,7 @@
         display: none;
 }
 .filters-container {
-    margin-top: 4px;
+    margin-top: 24px;
     border-radius: 4px;
     border: 1px solid rgba(0,0,0, .15);
     background-color: white;
