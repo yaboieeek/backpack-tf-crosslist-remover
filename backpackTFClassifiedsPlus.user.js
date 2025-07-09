@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.1.3
+// @version      1.2.0
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -15,20 +15,113 @@
 
 (function() {
     'use strict';
+    // GM_setValue('blockedUsers', []);  // <----- BLOCKED-USERS-RESET (uncomment, run the script, comment)
+    class DarkMode {
+        isDarkmode;
+
+        constructor() {
+            this.isDarkmode = GM_getValue('isDarkmode') || false;
+            this.bodyElement = document.querySelector('body.app-440');
+            this.isDarkmode && this.bodyElement.classList.toggle('dark-mode');
+            // this.createTheToggler();
+        }
+        createTheToggler() {
+            const targetElement = document.querySelector('#main-navbar .navbar-right');
+            const button = document.createElement('button');
+            button.innerText = this.isDarkmode ? '🌑' : '🌞' ;
+            button.style = 'line-height: 1; height: 40px; width: 60px; padding: 0;';
+            targetElement.append(button);
+            button.addEventListener('click', () => {
+                this.changeTheScheme();
+                this.updateButtonState(button);
+            });
+        }
+        changeTheScheme() {
+            this.isDarkmode = !this.isDarkmode;
+            GM_setValue('isDarkmode', this.isDarkmode);
+            this.bodyElement.classList.toggle('dark-mode');
+        }
+        updateButtonState(button) {
+            button.innerText = this.isDarkmode ? '🌑' : '🌞' ;
+        }
+
+    }
+
 
     class Listing{
         listingData;
         listingElement;
 
         constructor(listingElement, listingData) {
+            console.log('Listing element was passed \n' + listingElement);
             this.listingData = listingData;
             this.listingElement = listingElement;
-
-            listingElement.addEventListener('dblclick', () => this.truncateTheListing()); // cus some people would want to see some messages
+            this.addBlockStateButton();
+            this.listingElement.addEventListener('dblclick', () => this.truncateTheListing()); // cus some people would want to see some messages
         }
         //// we dont need to make a dedicated method for truncating listing messages on different types of listings
         truncateTheListing() {
             this.listingElement.querySelector('p') && this.listingElement.querySelector('p').classList.toggle('truncated');
+        }
+
+        addBlockStateButton() {
+            const userNameContainer = this.listingElement.querySelector('.user-handle');
+            const blockButton = document.createElement('button');
+
+            blockButton.innerText = 'Block';
+            blockButton.title  = `Block ${this.listingData.listing_name}?`;
+            blockButton.className = 'block-name-button';
+
+            blockButton.addEventListener('click', (e) => {
+                this.showConfirmationModal(blockButton);
+            });
+            userNameContainer.append(blockButton);
+        }
+
+
+        blockUser(userName, userId) {
+            const blockedUsers = GM_getValue('blockedUsers') || [];
+            console.log(blockedUsers);
+            GM_setValue('blockedUsers', [...blockedUsers, {userName: userName, id: userId}])
+        }
+
+        unblockUser(userID){
+           const blockedUsers = GM_getValue('blockedUsers') || [];
+            GM_setValue('blockedUsers', blockedUsers.filter(user => user.id !== userID));
+        }
+
+        showConfirmationModal(blockButton) {
+            const userName = this.listingData.listing_name;
+            const [confirmationContainer,
+                   buttonsContainer,
+                   confirmButton,
+                   cancelButton] = [document.createElement('div'), document.createElement('div'), document.createElement('button'), document.createElement('button')];
+
+            confirmationContainer.classList.add('block-user-modal');
+            buttonsContainer.className = 'block-buttons-container';
+            confirmButton.classList.add('confirm-button', 'block-button');
+            cancelButton.classList.add('cancel-button', 'block-button');
+            confirmationContainer.innerHTML = `<span>Block this user?</span>`;
+            buttonsContainer.append(confirmButton, cancelButton);
+
+            confirmationContainer.append(buttonsContainer);
+            blockButton.append(confirmationContainer);
+            confirmButton.innerText = 'Block';
+            cancelButton.innerText = 'Cancel';
+
+            confirmButton.addEventListener('click', () => {
+                this.blockUser(userName, this.listingData.listing_account_id);
+                window.location.reload();
+            });
+            cancelButton.addEventListener('click', () => this.destroyTheModal(confirmationContainer));
+
+            window.addEventListener('click', (e) => {
+               (e.target !== blockButton) && this.destroyTheModal(confirmationContainer);
+            })
+
+        }
+        destroyTheModal(modal) {
+            modal.remove()
         }
 
         //// r these absctract methods? I think they are
@@ -99,18 +192,61 @@
         }
 
         toggleVisibility() {
-            this.listingElement.classList.toggle('blocked-toggle');
+            this.listingElement.classList.toggle('blocked-hidden');
         }
 
         highlight() {
             this.listingElement.style.backgroundColor = 'rgba(0,0,0, .1)'
         }
+        addBlockStateButton() {
+            const userNameContainer = this.listingElement.querySelector('.user-handle');
+            const blockButton = document.createElement('button');
+
+            blockButton.innerText = 'Unblock';
+            blockButton.title = `Unblock ${this.listingData.listing_name}?`;
+            blockButton.className = 'block-name-button';
+
+            blockButton.addEventListener('click', (e) => {
+                this.showConfirmationModal(blockButton);
+            });
+            userNameContainer.append(blockButton);
+        }
+
+        showConfirmationModal(blockButton) {
+            const userName = this.listingData.listing_name;
+            const [confirmationContainer,
+                   buttonsContainer,
+                   confirmButton,
+                   cancelButton] = [document.createElement('div'), document.createElement('div'), document.createElement('button'), document.createElement('button')];
+
+            confirmationContainer.classList.add('block-user-modal');
+            buttonsContainer.className = 'block-buttons-container';
+            confirmButton.classList.add('confirm-button', 'block-button');
+            cancelButton.classList.add('cancel-button', 'block-button');
+            confirmationContainer.innerHTML = `<span>Unblock this user?</span>`;
+            buttonsContainer.append(confirmButton, cancelButton);
+
+            confirmationContainer.append(buttonsContainer);
+            blockButton.append(confirmationContainer);
+            confirmButton.innerText = 'Unblock';
+            cancelButton.innerText = 'Cancel';
+
+            confirmButton.addEventListener('click', () => {
+                this.unblockUser(this.listingData.listing_account_id);
+                window.location.reload();
+            });
+            cancelButton.addEventListener('click', () => this.destroyTheModal(confirmationContainer));
+
+            window.addEventListener('click', (e) => {
+               (e.target !== blockButton) && this.destroyTheModal(confirmationContainer);
+            })
+        }
     }
 
     class ListingsFactory {
+    static blockedUsersArray = GM_getValue('blockedUsers') || [];
     static createListing(listingElement) {
         const listingData = listingElement.querySelector('.item').dataset;
-
         if (listingData.listing_price === '' ) {
             return new MarketplaceListing(listingElement, listingData);
 
@@ -119,6 +255,8 @@
 
         } else if ((listingData.listing_intent === 'buy') && ((listingData.quality_elevated) || (listingData.effect_id && listingData.quality === '11'))) {
             return new StrangeListing(listingElement, listingData);
+        } else if (ListingsFactory.blockedUsersArray.some(userData => userData.id === listingData.listing_account_id)) {
+            return new BlockedUserListing(listingElement, listingData);
         }
 
         return new Listing(listingElement, listingData);
@@ -206,7 +344,7 @@
     }
 
     class ListingsFiltersControl {
-        // blockedUsers = GM_getValue('blockedUsers') || []
+        blockedUsers = GM_getValue('blockedUsers') || [];
         firstHeaderIndex = 0;
         secondHeaderIndex = 1;
 
@@ -216,9 +354,9 @@
                 strange_unusuals : GM_getValue('strange_unusuals')|| false,
                 spells           : GM_getValue('spells')          || false,
                 mp_listings      : GM_getValue('mp_listings')     || false,
-                // 'blocked_listings': GM_getValue('blocked_listings')|| false,
                 truncating       : GM_getValue('truncating')      || false,
                 autoscroll       : GM_getValue('autoscroll')      || false,
+                'blocked_users': GM_getValue('blocked_users')|| false,
         }
 
 
@@ -238,11 +376,10 @@
             toggleSelectButton.innerText = 'View settings';
             toggleSelectButton.className = 'dropdown-filters';
             filtersContainer.className = 'hidden filters-container';
-
-            const buttons = Object.keys(this.hidingCfg).map((category, index) => {
+            const buttonsLength = Object.keys(this.hidingCfg).length;
+            const buttons = Object.keys(this.hidingCfg).slice(0, buttonsLength - 1).map((category, index) => {
                 const categoryToString = category.replace('_', ' ');
                 const finalObject = {type: 'checkbox', name: category, label: ''};
-                console.log(index, category);
                 finalObject.label = `Enable ${categoryToString}`;
                 if (index < 3) finalObject.label = `Hide ${categoryToString}`;
                 return finalObject;
@@ -307,16 +444,18 @@
                 this.hidingCfg.spells && listing.isSpelled && listing.toggleVisibility();
                 this.hidingCfg.strange_unusuals && listing.isStrange && listing.toggleVisibility();
                 this.hidingCfg.truncating && listing.truncateTheListing();
+                listing.isBlockedUserListing && listing.toggleVisibility();
             }
             this.hidingCfg.autoscroll && scroll.scrollToListings();
         }
 
     addRevealButtons() { //////////// it will only add buttons if certain listings appear
         //////////// not sure if it's ok but as long as it works all g
-        const [mp, spell, strange] = [
+        const [mp, spell, strange, blocked] = [
             this.listings.filter(listing => listing.isMarketplace),
             this.listings.filter(listing => listing.isSpelled),
-            this.listings.filter(listing => listing.isStrange)
+            this.listings.filter(listing => listing.isStrange),
+            this.listings.filter(listing => listing.isBlockedUserListing),
         ];
 
         ////we need to place mp button on the left cus mp orders cant be buy orders
@@ -335,7 +474,7 @@
             button.addEventListener('click', () => {for (const listing of category) {listing.toggleVisibility()}});
 
            //append mp on the left
-            if (categoryName === 'mp') {
+            if (['mp', 'blocked'].includes(categoryName)) {
                 sellOrderHeader.append(button);
                 return;
             }
@@ -345,20 +484,113 @@
         if (mp.length >= 1)       createButtons(mp, 'mp');
         if (spell.length >= 1 )   createButtons(spell, 'spell');
         if (strange.length >= 1 ) createButtons(strange, 'strange');
-    }
+        if (blocked.length >= 1 ) createButtons(blocked, 'blocked');
+     }
     }
 
 
 ///////// no more fancy notifications for faster navigation
     const scroll = new PageControl();
-
+    new DarkMode();
     const listings = [...document.querySelectorAll('.listing')]
     .map(listing => ListingsFactory.createListing(listing));
     new ListingsFiltersControl(listings, scroll);
 
+    const darkModeStyle = document.createElement('style');
+    darkModeStyle.innerHTML =
+        `
+        .dark-mode {
 
+            background: #111 !important;
+            border-color: transparent !important;
+            & .app-440 .navbar-fixed-top, .app-440 .navbar-fixed-top .navbar-header {
+                background: black !important;
+            }
+            & .panel-body {
+                background: #151515 !important;
+                color: #ccd !important
+            }
+
+            & .modal-content, .modal-footer {
+                background-color: #111 !important;
+            }
+
+            & .listing   {
+                padding: 6px 12px !important;
+                background-color: #222 !important;
+                & .listing-body{
+                    & .listing-header {
+                        border-bottom: 1px solid #2b2b2b;
+                    }
+                }
+                & h5 {
+                    font-size: 15px;
+                    color: #ddd
+                    }
+                & .quote-box {
+                    background-color: #333;
+                    color: #ddd;
+                    border-color: transparent
+                }
+            }
+
+            & .dropdown-menu {
+                background: #333 !important;
+            }
+            & li > a {
+                color: white !important
+            }
+            & .form-control {
+                background-color: #2d2d2d;
+                color: #bbb;
+                border-width: 0;
+            }
+            & .btn-default {
+                border: none;
+                color: #a7a7a7;
+                background-color: #343434;
+
+                & :hover {
+                    filter: brightness(1.2) !important;
+                }
+            }
+
+            & .panel-filter  {
+                border: none;
+                & .panel-heading .panel-title {
+                    color: #ddd;
+                    background: #222;
+                }
+
+            }
+            &.pagination > li > a, .pagination .disabled a {
+                background: black !important;
+                border-color: #555 !important;
+            }
+            & .well {
+                background-color: black
+            }
+            & #search-crumbs .btn-default {
+                margin-bottom: 4px;
+            }
+            & .awesome3 {
+                color: #888 !important
+            }
+        }
+        `
+    // document.head.append(darkModeStyle);
     document.head.innerHTML += `<style>
-    .hidden, .marketplace-hidden, .spell-hidden, .strange-hidden{
+:root {
+    --bg-black: #000;
+    --bg-dark: #202020;
+    --bg-darker: #111111;
+    --bg-darkest: #010101;
+    --white: white;
+    --light: #777;
+    --lightest: #cdd;
+    --quote-color: #c0c0c0;
+}
+    .hidden, .marketplace-hidden, .spell-hidden, .strange-hidden, .blocked-hidden{
         display: none;
 }
 .filters-container {
@@ -384,7 +616,7 @@
     line-height: 1
 }
 .truncated {
-    width: 25em;
+    width: 24em;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;}
@@ -419,6 +651,65 @@ footer {
     flex-flow: end;
     font-size: 13px !important;
     color: black;display: flex; flex-flow: row-reverse
+}
+.block-user-modal {
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+      color: #444;
+      font-size: 20px;
+      position: absolute;
+      height: 100px;
+      width: 200px;
+      background: white;
+      transform: translateX(-50%);
+      z-index: 999;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: 5px;
+}
+
+.block-buttons-container {
+    display: flex;
+    margin-top: auto;
+    width: 100%;
+    padding: 12px 0;
+    justify-content: space-around;
+
+
+}
+
+
+.block-button {
+    color: white;
+    border-radius: 4px;
+    width: 40%; height: 40px;
+    text-justify: center;
+    font-size: 20px;
+    border: none;
+
+    &:hover {
+        filter: brightness(1.75);
+        color: black
+    }
+}
+
+.confirm-button {
+    background: #840000;
+}
+
+.cancel-button {
+     border: 4px solid rgba(0,0,0,.15);
+     background: transparent;
+     color: #bbb;
+}
+.block-name-button {
+    margin-left: 2px;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 2px;
+    font-size: 10px;
+    background: transparent;
+
+}
 }
 </style>`
 
