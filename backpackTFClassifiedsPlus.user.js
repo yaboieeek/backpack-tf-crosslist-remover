@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.2.0
+// @version      1.3.0
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -53,7 +53,6 @@
         listingElement;
 
         constructor(listingElement, listingData) {
-            console.log('Listing element was passed \n' + listingElement);
             this.listingData = listingData;
             this.listingElement = listingElement;
             this.addBlockStateButton();
@@ -62,6 +61,11 @@
         //// we dont need to make a dedicated method for truncating listing messages on different types of listings
         truncateTheListing() {
             this.listingElement.querySelector('p') && this.listingElement.querySelector('p').classList.toggle('truncated');
+        }
+        //// for some reason can't just be clicked smh my head, time element is initializing
+        toggleDateTime() {
+            this.listingElement.querySelector('.data1').style = 'display: none';
+            this.listingElement.querySelector('.data2').style = 'display: inline';
         }
 
         addBlockStateButton() {
@@ -78,7 +82,7 @@
             userNameContainer.append(blockButton);
         }
 
-
+        ////we can block any user we see, so declaring these block features in parent class
         blockUser(userName, userId) {
             const blockedUsers = GM_getValue('blockedUsers') || [];
             console.log(blockedUsers);
@@ -105,7 +109,7 @@
             buttonsContainer.append(confirmButton, cancelButton);
 
             confirmationContainer.append(buttonsContainer);
-            blockButton.append(confirmationContainer);
+            this.listingElement.querySelector('.click-data-toggle').append(confirmationContainer);
             confirmButton.innerText = 'Block';
             cancelButton.innerText = 'Cancel';
 
@@ -113,7 +117,11 @@
                 this.blockUser(userName, this.listingData.listing_account_id);
                 window.location.reload();
             });
-            cancelButton.addEventListener('click', () => this.destroyTheModal(confirmationContainer));
+            cancelButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.preventPropagation();
+                this.destroyTheModal(confirmationContainer);}
+                                         );
 
             window.addEventListener('click', (e) => {
                (e.target !== blockButton) && this.destroyTheModal(confirmationContainer);
@@ -198,6 +206,7 @@
         highlight() {
             this.listingElement.style.backgroundColor = 'rgba(0,0,0, .1)'
         }
+        ////since the logic for blocked user changes, we are redeclaring methods and block/unblock logic
         addBlockStateButton() {
             const userNameContainer = this.listingElement.querySelector('.user-handle');
             const blockButton = document.createElement('button');
@@ -207,12 +216,14 @@
             blockButton.className = 'block-name-button';
 
             blockButton.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.showConfirmationModal(blockButton);
             });
             userNameContainer.append(blockButton);
         }
 
         showConfirmationModal(blockButton) {
+            ///this is too messy, will clean it up eventually
             const userName = this.listingData.listing_name;
             const [confirmationContainer,
                    buttonsContainer,
@@ -227,12 +238,12 @@
             buttonsContainer.append(confirmButton, cancelButton);
 
             confirmationContainer.append(buttonsContainer);
-            blockButton.append(confirmationContainer);
+            this.listingElement.querySelector('.click-data-toggle').append(confirmationContainer);
             confirmButton.innerText = 'Unblock';
             cancelButton.innerText = 'Cancel';
 
             confirmButton.addEventListener('click', () => {
-                this.unblockUser(this.listingData.listing_account_id);
+                this.unblockUser(this.listingData.listing_account_id); ///// unblocking user instead of blocking, because he already is in a blocklist
                 window.location.reload();
             });
             cancelButton.addEventListener('click', () => this.destroyTheModal(confirmationContainer));
@@ -355,6 +366,7 @@
                 spells           : GM_getValue('spells')          || false,
                 mp_listings      : GM_getValue('mp_listings')     || false,
                 truncating       : GM_getValue('truncating')      || false,
+                bump_to_listed   : GM_getValue('bump_to_listed')      || false,
                 autoscroll       : GM_getValue('autoscroll')      || false,
                 'blocked_users': GM_getValue('blocked_users')|| false,
         }
@@ -378,7 +390,7 @@
             filtersContainer.className = 'hidden filters-container';
             const buttonsLength = Object.keys(this.hidingCfg).length;
             const buttons = Object.keys(this.hidingCfg).slice(0, buttonsLength - 1).map((category, index) => {
-                const categoryToString = category.replace('_', ' ');
+                const categoryToString = category.replace(/_/g, ' ');
                 const finalObject = {type: 'checkbox', name: category, label: ''};
                 finalObject.label = `Enable ${categoryToString}`;
                 if (index < 3) finalObject.label = `Hide ${categoryToString}`;
@@ -438,11 +450,13 @@
             GM_setValue(category, !GM_getValue(category));
             this.hidingCfg[category] = !this.hidingCfg[category];
         }
+
         initDefaults(scroll) {
             for (const listing of this.listings) {
                 this.hidingCfg.mp_listings && listing.isMarketplace && listing.toggleVisibility();
                 this.hidingCfg.spells && listing.isSpelled && listing.toggleVisibility();
                 this.hidingCfg.strange_unusuals && listing.isStrange && listing.toggleVisibility();
+                this.hidingCfg.bump_to_listed && listing.toggleDateTime();
                 this.hidingCfg.truncating && listing.truncateTheListing();
                 listing.isBlockedUserListing && listing.toggleVisibility();
             }
@@ -662,10 +676,11 @@ footer {
       height: 100px;
       width: 200px;
       background: white;
-      transform: translateX(-50%);
+      transform: translateX(50%);
       z-index: 999;
       border: 1px solid rgba(0,0,0,.1);
       border-radius: 5px;
+      text-align: center;
 }
 
 .block-buttons-container {
