@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.5.0
+// @version      1.5.1
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -606,8 +606,9 @@
             return link;
         }
         makeButtonsAndAppend(sitesDataArray = [], itemData) {
-            console.log("we're doing something!!!!!" + sitesDataArray);
+            console.log(!!itemData.effect_name);
             if (sitesDataArray === []) return;
+            if (!itemData.effect_name) return;
             const buttons = sitesDataArray
             .filter(siteData => !(this.hasMpLink && siteData.siteName === 'Marketplace.tf'))
             .map(siteData => {
