@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.3.0
+// @version      1.4.0
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
+// @match        https://backpack.tf/stats/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=backpack.tf
 // @source       https://github.com/yaboieeek/backpackTFClassifiedsPlus/
 // @updateURL https://github.com/yaboieeek/backpackTFClassifiedsPlus/raw/refs/heads/main/backpackTFClassifiedsPlus.user.js
@@ -179,7 +180,8 @@
         constructor (listingElement, listingData) {
             super(listingElement, listingData);
             this.isStrange = true;
-            this.highlight()
+            this.highlight();
+            this.makeTheNameClickable();
         }
 
         toggleVisibility() {
@@ -188,6 +190,16 @@
 
         highlight() {
             this.listingElement.style.backgroundColor = 'rgba(255,165,0, .15)'
+        }
+
+        makeTheNameClickable() {
+            if (this.listingData.quality !== '5') return;
+            const title = this.listingElement.querySelector('.listing-title');
+            title.classList.add('clickable-name');
+            title.title = 'Redirect to Non-Strange unusual';
+            title.addEventListener('click', () => {
+                window.open(`https://backpack.tf/stats/Unusual/${encodeURIComponent(this.listingData.name)}/Tradable/Craftable/${encodeURIComponent(this.listingData?.effect_id ?? '')}`);
+            })
         }
     }
 
@@ -502,13 +514,34 @@
      }
     }
 
+    class initializeStatPage {
+        constructor() {
+            this.itemNameElement = document.querySelector('.stats-header-title');
+            this.magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual();
+        }
 
-///////// no more fancy notifications for faster navigation
-    const scroll = new PageControl();
-    new DarkMode();
-    const listings = [...document.querySelectorAll('.listing')]
-    .map(listing => ListingsFactory.createListing(listing));
-    new ListingsFiltersControl(listings, scroll);
+        magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual() {
+            if (!this.itemNameElement.innerText.toLowerCase().includes('strange')) return;
+
+            this.itemNameElement.classList.add('clickable-name');
+            this.itemNameElement.title = 'Redirect to Non-Strange unusual';
+            this.itemNameElement.addEventListener('click', () => {window.location.href = window.location.href.replace('Strange%20', '')})
+        }
+    }
+
+///////// initialize the classifieds part
+    if (window.location.href.match(/https:\/\/backpack\.tf\/classifieds\?*/)) {
+        const scroll = new PageControl();
+        new DarkMode();
+        const listings = [...document.querySelectorAll('.listing')]
+        .map(listing => ListingsFactory.createListing(listing));
+        new ListingsFiltersControl(listings, scroll);
+    }
+
+///////// initialize the stats part
+    if (window.location.href.match(/^https:\/\/backpack\.tf\/stats\/?.*$/)) {
+        new initializeStatPage();
+    }
 
     const darkModeStyle = document.createElement('style');
     darkModeStyle.innerHTML =
@@ -724,6 +757,15 @@ footer {
     font-size: 10px;
     background: transparent;
 
+}
+
+.clickable-name {
+    cursor: pointer;
+    padding: 0.2em;
+    &:hover {
+        background: linear-gradient(to right, rgba(207, 106, 50, .3),rgba(88, 52, 113, .4)  40% );
+        border-radius: 0.5em;
+    }
 }
 }
 </style>`
