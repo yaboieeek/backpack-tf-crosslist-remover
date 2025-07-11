@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.4.0
+// @version      1.5.0
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -515,9 +515,39 @@
     }
 
     class initializeStatPage {
+        ///Storing image data as a string because holy shit that looks cool (the idea is taken from steamdetective :P)
+        sites = [
+            {
+                baseLink: 'https://marketplace.tf/items/tf2/',
+                siteName: 'Marketplace.tf',
+                siteIcon: '/images/marketplace-medium.png?v=2'
+            },
+            {
+                baseLink: 'https://stntrading.eu/item/tf2/Unusual+',
+                siteName: 'STN.tf',
+                siteIcon:'data:image/jpeg;base64,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'
+            },
+            {
+                baseLink: 'https://mannco.store/item/440-',
+                siteName: 'Mannco.store',
+                siteIcon: 'data:image/png;base64,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'
+            },
+            {
+                baseLink: 'https://gladiator.tf/sales?item=',
+                siteName: 'Gladiator.tf',
+                siteIcon: 'data:image/png;base64,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'
+            },
+
+        ];
+        itemData;
+        hasMpLink;
         constructor() {
+            this.itemData = document.querySelector('.stats-header-item > .item').dataset;
             this.itemNameElement = document.querySelector('.stats-header-title');
+            this.hasMpLink = !!document.querySelector('.price-boxes a[title*="Marketplace"], .price-boxes a[data-original-title*="Marketplace"]');
+            console.log(this.hasMpLink);
             this.magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual();
+            this.makeButtonsAndAppend(this.sites, this.itemData);
         }
 
         magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual() {
@@ -526,6 +556,68 @@
             this.itemNameElement.classList.add('clickable-name');
             this.itemNameElement.title = 'Redirect to Non-Strange unusual';
             this.itemNameElement.addEventListener('click', () => {window.location.href = window.location.href.replace('Strange%20', '')})
+        }
+
+        generateSiteButton(siteData, itemData) {
+            const buttonHTML = `
+            <div class="icon">
+                <img src="${siteData.siteIcon}" alt="${siteData.siteName} icon" style="border-radius: 5px;padding: 0;margin-top: -5px;">
+                    </div>
+                    <div class="text">
+                    <div class="value" style = 'font-size: 12px'>
+                        View this item on
+                    </div>
+                    <div class="subtitle" style = 'font-size: 18px; font-weight: bold; color: #666 '>
+                        ${siteData.siteName}
+                    </div>
+                </div>
+            ` ///////// because why would i reinvent the bicycle
+            const link = document.createElement('a');
+            link.className = 'price-box';
+            link.dataset.tip = 'top';
+            link.title = siteData.siteName;
+            link.href = this.generateSiteLink(siteData, itemData);
+            link.target = 'blank';
+            link.innerHTML = buttonHTML;
+            return link;
+        }
+
+        generateSiteLink({baseLink, siteName}, {name, effect_name = ''}) {
+            let link = baseLink;
+            switch(siteName) {
+                case 'STN.tf': {
+                    link += effect_name.split(' ').join('+') + '+' + name.split(' ').join('+');
+                    break;
+                }
+                case 'Mannco.store': {
+                    link += effect_name.replace(/['!]/g, '').split(' ').join('-') + '-unusual-' + name.split(' ').join('-');
+                    break;
+                }
+                case 'Gladiator.tf': {
+                    link += effect_name + ' ' + name;
+                    break;
+                }
+                 default: {
+                     link += effect_name +' ' + name;
+                     break;
+                 }
+            }
+            console.log(link);
+            return link;
+        }
+        makeButtonsAndAppend(sitesDataArray = [], itemData) {
+            console.log("we're doing something!!!!!" + sitesDataArray);
+            if (sitesDataArray === []) return;
+            const buttons = sitesDataArray
+            .filter(siteData => !(this.hasMpLink && siteData.siteName === 'Marketplace.tf'))
+            .map(siteData => {
+               return this.generateSiteButton(siteData, itemData);
+            });
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style = 'width: 100%; height: min-content';
+            buttonsContainer.append(...buttons);
+
+            document.querySelector('.price-boxes').append(buttonsContainer);
         }
     }
 
