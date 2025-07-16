@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.6.0
+// @version      1.6.1
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -148,7 +148,6 @@ class Listing{
     toggleVisibility() {}
     highlight() {
         this.blocked ? this.listingElement.style.background = 'rgba(0,0,0,.1)' : null;
-
     };
 
 }
@@ -185,7 +184,7 @@ class SpellListing extends Listing {
     }
 
     highlight() {
-        this.listingElement.style.backgroundColor = 'rgba(255,135,155, .15)'
+        this.listingElement.style.backgroundColor = 'rgba(48,213,200, .15)'
     }
 }
 
@@ -685,7 +684,7 @@ class statPageModulesControl { //because oh boy i dont care about the fkin paint
         const amountExists = this.modules[0]?.elements[1]?.querySelectorAll('strong')[1]?.innerText ?? 0;
         switch (amountExists) {
             case 0:
-                headerForGraph.innerText = 'Item does not exist';
+                headerForGraph.innerText = 'Item may not exist';
                 headerForGraph.style.color = 'red';
                 break;
             case 'only one':
@@ -710,7 +709,10 @@ class statPageModulesControl { //because oh boy i dont care about the fkin paint
         this.createList(settingsButton);
     }
     toggleModule(module) { /// because the first one is really weird, i mean whole page is weird but lol
-        if (!module.exists) return;
+        console.log(module.moduleName);
+        if (!module.exists
+        || (['classifieds', 'Suggestions'].includes(module.moduleName))) return;
+
         if (module.moduleName === 'Item Instances Graph') {
             this.modules[0].elements.forEach((elem, index) => (index !== 2) && elem.classList.toggle('hidden'));
             return
