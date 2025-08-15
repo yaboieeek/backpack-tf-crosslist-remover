@@ -18,41 +18,6 @@
 'use strict';
 // GM_setValue('blockedUsers', []);  // <----- BLOCKED-USERS-RESET (uncomment, run the script, comment)
 
-
-
-//  Nu uh you aint getting custom darkmode for a while
-//class DarkMode {
-//         isDarkmode;
-
-//         constructor() {
-
-//             this.isDarkmode = GM_getValue('isDarkmode') || false;
-//             this.bodyElement = document.querySelector('body.app-440');
-//             this.isDarkmode && this.bodyElement.classList.toggle('dark-mode');
-//             // this.createTheToggler();
-//         }
-//         createTheToggler() {
-//             const targetElement = document.querySelector('#main-navbar .navbar-right');
-//             const button = document.createElement('button');
-//             button.innerText = this.isDarkmode ? '🌑' : '🌞' ;
-//             button.style = 'line-height: 1; height: 40px; width: 60px; padding: 0;';
-//             targetElement.append(button);
-//             button.addEventListener('click', () => {
-//                 this.changeTheScheme();
-//                 this.updateButtonState(button);
-//             });
-//         }
-//         changeTheScheme() {
-//             this.isDarkmode = !this.isDarkmode;
-//             GM_setValue('isDarkmode', this.isDarkmode);
-//             this.bodyElement.classList.toggle('dark-mode');
-//         }
-//         updateButtonState(button) {
-//             button.innerText = this.isDarkmode ? '🌑' : '🌞' ;
-//         }
-
-//     }
-
 class Listing{
     listingData;
     listingElement;
