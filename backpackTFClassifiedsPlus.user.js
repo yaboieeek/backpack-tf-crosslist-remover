@@ -527,7 +527,7 @@ class initializeStatPage {
                 break;
             }
             case 'Mannco.store': {
-                link += itemData.effect_name.replace(/['!]/g, '').split(' ').join('-') + '-unusual-' + itemData.name.replace(/['!:]/g, '').split(' ').join('-');
+                link += itemData.effect_name.replace(/['!(|):]/g, '').split(' ').join('-') + '-unusual-' + itemData.name.replace(/['!(|):]/g, '').split(' ').join('-').replace(/--/g, '-').toLowerCase();
                 break;
             }
             case 'Gladiator.tf': {
