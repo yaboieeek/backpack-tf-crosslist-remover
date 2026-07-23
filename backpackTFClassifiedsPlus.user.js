@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         backpackTFClassifieds+
 // @namespace    https://steamcommunity.com/profiles/76561198967088046
-// @version      1.7.2
+// @version      1.7.3
 // @description  adds some cool features to classifieds pages
 // @author       eeek
 // @match        https://backpack.tf/classifieds?*
@@ -448,7 +448,8 @@ class initializeStatPage {
         {
             baseLink: 'https://mannco.store/item/440-',
             siteName: 'Mannco.store',
-            siteIcon: 'https://mannco.store/statics/img/icon.svg'
+            // siteIcon: 'https://mannco.store/statics/img/icon.svg'
+            textIcon: true
         },
         {
             baseLink: 'https://gladiator.tf/sales?item=',
@@ -471,7 +472,7 @@ class initializeStatPage {
         console.log(this.hasMpLink);
         this.magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual();
         this.makeButtonsAndAppend(this.sites, this.itemData);
-        this.clickableClassifieds()
+        // this.clickableClassifieds()
     }
 
     magicalButtonThatAllowsUsToGoToTheUnusualPageOnAStrangeUnusual() {
@@ -506,7 +507,10 @@ class initializeStatPage {
 
         if (siteData.textIcon) {
             repres = document.createElement('i');
-            repres.classList.add('fa', 'fa-camera');
+            switch (siteData.siteName) {
+                case 'Mannco.store': repres.className = 'fa fa-money'; break;
+                default: repres.className = 'fa fa-camera'; break;
+            }
         } else {
             repres = document.createElement('img');
             repres.src = siteData.siteIcon;
